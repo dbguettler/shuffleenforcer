@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shuffle_enforcer/authorize.dart';
+import 'package:shuffle_enforcer/playlist_listing.dart';
 import 'package:shuffle_enforcer/utils/auth.dart';
 
 class Home extends StatefulWidget {
@@ -16,12 +17,13 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SafeArea(
+        child: Scaffold(
       body: FutureBuilder(
           future: authed,
           builder: (context, AsyncSnapshot<bool> snapshot) {
             if (snapshot.hasData && snapshot.data!) {
-              return const Center(child: Text("Success!"));
+              return const PlaylistListing();
             } else if (snapshot.hasData) {
               return const Authorize();
             } else if (snapshot.hasError) {
@@ -30,6 +32,6 @@ class _HomeState extends State<Home> {
               return const CircularProgressIndicator();
             }
           }),
-    );
+    ));
   }
 }

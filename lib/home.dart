@@ -29,7 +29,7 @@ class _HomeState extends State<Home> {
             } else if (snapshot.hasError) {
               return const Text("An error has occurred.");
             } else {
-              return const CircularProgressIndicator();
+              return const Center(child: CircularProgressIndicator());
             }
           }),
     ));

@@ -83,7 +83,8 @@ Future<List<Track>> getPlaylistTracks(String id) async {
     Response? res = await callApiGet(
         Uri.https("api.spotify.com", "/v1/playlists/$id/tracks", {
       "market": countryCode,
-      "fields": "next,items(track(album(images),artists(name),id,name))",
+      "fields":
+          "next,items(is_local,track(album(images),artists(name),id,name))",
       "limit": pageSize.toString(),
       "offset": currentOffset.toString()
     }));
@@ -99,6 +100,11 @@ Future<List<Track>> getPlaylistTracks(String id) async {
     Map body = jsonDecode(res.body);
     for (Map item in body["items"]) {
       Map track = item["track"];
+
+      if (item["is_local"]) {
+        continue;
+      }
+
       String albumArt = track["album"]["images"][0]["url"];
       List<String> artists = [];
 

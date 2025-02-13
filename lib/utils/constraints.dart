@@ -20,3 +20,18 @@ Future<List<Constraint>> getConstraints(String playlistId) async {
 
   return constraints;
 }
+
+Future<void> setConstraints(
+    String playlistId, List<Constraint> constraints) async {
+  final prefs = SharedPreferencesAsync();
+  String key = "playlist::$playlistId";
+
+  List<String> strConstraints = [];
+  for (Constraint c in constraints) {
+    strConstraints.add("${c.firstId},${c.secondId}");
+  }
+
+  await prefs.setStringList(key, strConstraints);
+
+  return;
+}

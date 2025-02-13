@@ -33,6 +33,11 @@ class Playlist {
       // Load constraints into tracks
       List<Constraint> constraints = await getConstraints(id);
 
+      // Create list to hold constraints that are still valid.
+      // Any constraints where one or more songs are no longer in the playlist
+      // are invalid and will not appear in this list.
+      List<Constraint> cleanConstraints = [];
+
       for (Constraint c in constraints) {
         Track? first =
             _tracks!.singleWhereOrNull((element) => element.id == c.firstId);
@@ -46,7 +51,10 @@ class Playlist {
 
         first.afterThis = second;
         second.beforeThis = first;
+        cleanConstraints.add(c);
       }
+
+      await setConstraints(id, cleanConstraints);
     }
 
     return _tracks!;

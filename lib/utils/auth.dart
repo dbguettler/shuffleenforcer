@@ -48,7 +48,8 @@ void requestAuthorization() async {
   Uri authURL = Uri.https("accounts.spotify.com", "/authorize", {
     "response_type": "code",
     "client_id": "de6289eff46548bda83bff349504395f",
-    "scope": "playlist-read-private user-modify-playback-state",
+    "scope":
+        "playlist-read-private user-modify-playback-state user-read-private",
     "code_challenge_method": "S256",
     "code_challenge": encodedVerifier,
     "state": state,

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart';
 import 'package:shuffle_enforcer/models/playlist.dart';
+import 'package:shuffle_enforcer/models/track.dart';
 import 'package:shuffle_enforcer/utils/auth.dart';
 
 Future<Response?> callApiGet(Uri uri, [Map<String, String>? headers]) async {
@@ -60,4 +61,57 @@ Future<List<Playlist>> getPlaylistListing() async {
   }
 
   return playlists;
+}
+
+Future<List<Track>> getPlaylistTracks(String id) async {
+  Response? aboutUserResponse =
+      await callApiGet(Uri.https("api.spotify.com", "/v1/me"));
+
+  if (aboutUserResponse == null || aboutUserResponse.statusCode != 200) {
+    throw Exception("Could not load user's country code.");
+  }
+
+  Map aboutUser = jsonDecode(aboutUserResponse.body);
+  String countryCode = aboutUser["country"];
+
+  bool hasNext = true;
+  int currentOffset = 0;
+  const int pageSize = 20;
+  List<Track> tracks = [];
+
+  while (hasNext) {
+    Response? res = await callApiGet(
+        Uri.https("api.spotify.com", "/v1/playlists/$id/tracks", {
+      "market": countryCode,
+      "fields": "next,items(track(album(images),artists(name),id,name))",
+      "limit": pageSize.toString(),
+      "offset": currentOffset.toString()
+    }));
+
+    if (res == null) {
+      throw Exception("Error refreshing tokens!");
+    }
+
+    if (res.statusCode != 200) {
+      throw Exception("Error response fetching tracks!");
+    }
+
+    Map body = jsonDecode(res.body);
+    for (Map item in body["items"]) {
+      Map track = item["track"];
+      String albumArt = track["album"]["images"][0]["url"];
+      List<String> artists = [];
+
+      for (Map artist in track["artists"]) {
+        artists.add(artist["name"]);
+      }
+
+      tracks.add(Track(track["id"], track["name"], artists, albumArt));
+    }
+
+    currentOffset += pageSize;
+    hasNext = body["next"] != null;
+  }
+
+  return tracks;
 }

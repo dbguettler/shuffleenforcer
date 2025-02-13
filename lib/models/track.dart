@@ -3,11 +3,11 @@ class Track {
   String name;
   List<String> artists;
   String albumArtUrl;
-  Track? after;
-  Track? before;
+  Track? afterThis;
+  Track? beforeThis;
 
   Track(this.id, this.name, this.artists, this.albumArtUrl,
-      [this.before, this.after]);
+      [this.beforeThis, this.afterThis]);
 
   @override
   String toString() {

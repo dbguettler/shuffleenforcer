@@ -22,10 +22,21 @@ class PlaylistView extends StatelessWidget {
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
                         Track track = snapshot.data![index];
+                        String subtitle = track.artists.join(", ");
+
+                        if (track.beforeThis != null) {
+                          subtitle +=
+                              "\n\nPlays after ${track.beforeThis!.name}";
+                        }
+
                         Widget trackWidget = ListTile(
                             title: Text(track.name),
-                            subtitle: Text(track.artists.join(", ")),
-                            leading: Image.network(track.albumArtUrl));
+                            subtitle: Text(subtitle),
+                            leading: Image.network(track.albumArtUrl),
+                            trailing: IconButton(
+                                onPressed: () {},
+                                icon: const Icon(Icons.more_vert)),
+                            isThreeLine: track.beforeThis != null);
 
                         List<Widget> trackAndDivider = index == 0
                             ? [trackWidget]

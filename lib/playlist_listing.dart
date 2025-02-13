@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shuffle_enforcer/models/playlist.dart';
+import 'package:shuffle_enforcer/playlist_view.dart';
 import 'package:shuffle_enforcer/utils/api.dart';
 
 class PlaylistListing extends StatefulWidget {
@@ -24,13 +25,22 @@ class _PlaylistListingState extends State<PlaylistListing> {
               padding: const EdgeInsets.all(8),
               itemCount: snapshot.data!.length,
               itemBuilder: (BuildContext context, int index) {
-                Widget playlistWidget = ListTile(
-                    title: Text(snapshot.data![index].name),
-                    subtitle:
-                        Text(snapshot.data![index].owner ?? "Unavailable"),
-                    leading: snapshot.data![index].imageUrl != null
-                        ? Image.network(snapshot.data![index].imageUrl!)
-                        : const Icon(Icons.music_note));
+                Playlist playlist = snapshot.data![index];
+                Widget playlistWidget = InkWell(
+                  child: ListTile(
+                      title: Text(playlist.name),
+                      subtitle: Text(playlist.owner ?? "Unavailable"),
+                      leading: playlist.imageUrl != null
+                          ? Image.network(playlist.imageUrl!)
+                          : const Icon(Icons.music_note)),
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) =>
+                                PlaylistView(playlist: playlist)));
+                  },
+                );
 
                 List<Widget> playlistAndDivider = index == 0
                     ? [playlistWidget]

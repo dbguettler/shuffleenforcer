@@ -24,6 +24,6 @@ class AuthCallback extends StatelessWidget {
       getTokens();
     }
 
-    return Scaffold(body: Center(child: childWidget));
+    return SafeArea(child: Scaffold(body: Center(child: childWidget)));
   }
 }

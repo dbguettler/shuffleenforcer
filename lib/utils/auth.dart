@@ -115,3 +115,48 @@ Future<bool> tokensExist() async {
 
   return tokensExist;
 }
+
+Future<bool> refreshTokensIfNeeded() async {
+  final prefs = SharedPreferencesAsync();
+  if (!(await tokensExist())) {
+    throw StateError("No tokens exist to refresh.");
+  }
+
+  int expiry = (await prefs.getInt("expiry"))!;
+  if (expiry > DateTime.now().millisecondsSinceEpoch * 1000 + 2) {
+    return true;
+  }
+
+  String? refreshToken = await prefs.getString("refresh");
+
+  Response res =
+      await post(Uri.https("accounts.spotify.com", "/api/token"), body: {
+    "grant_type": "refresh_token",
+    "refresh_token": refreshToken,
+    "client_id": "de6289eff46548bda83bff349504395f"
+  }, headers: {
+    "Content-Type": "application/x-www-form-urlencoded"
+  });
+
+  // Check that response was ok
+  if (res.statusCode != 200) {
+    print("error response");
+    print(res.body);
+    return false;
+  }
+
+  // Store access/refresh tokens and expiry time
+  Map body = jsonDecode(res.body);
+  await prefs.setString("access", body["access_token"]);
+  if (body.containsKey("refresh_token")) {
+    await prefs.setString("refresh", body["refresh_token"]);
+  }
+  await prefs.setInt("expiry",
+      DateTime.now().millisecondsSinceEpoch * 1000 + body["expires_in"] as int);
+  return true;
+}
+
+Future<String> getAccessToken() async {
+  final prefs = SharedPreferencesAsync();
+  return (await prefs.getString("access"))!;
+}

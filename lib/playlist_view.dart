@@ -1,30 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:shuffle_enforcer/models/device.dart';
 import 'package:shuffle_enforcer/models/playlist.dart';
 import 'package:shuffle_enforcer/models/track.dart';
 import 'package:shuffle_enforcer/utils/api.dart';
 import 'package:shuffle_enforcer/utils/constraints.dart';
 
-class PlaylistView extends StatelessWidget {
-  const PlaylistView({super.key, required this.playlist});
+class PlaylistView extends StatefulWidget {
+  const PlaylistView(
+      {super.key,
+      required this.playlist,
+      required this.devices,
+      required this.selectedDevice,
+      required this.setSelectedDevice});
 
   final Playlist playlist;
+  final List<Device> devices;
+  final String? selectedDevice;
+  final void Function(String?) setSelectedDevice;
 
+  @override
+  State<PlaylistView> createState() => _PlaylistViewState();
+}
+
+class _PlaylistViewState extends State<PlaylistView> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
-              title: Text(playlist.name),
-              actions: [
-                IconButton(
-                    icon: const Icon(Icons.shuffle),
-                    onPressed: () async {
-                      await shuffleAndPlay(playlist);
-                    })
-              ],
+              title: Text(widget.playlist.name),
+              centerTitle: true,
             ),
+            bottomNavigationBar: BottomAppBar(
+                child: DropdownMenu(
+              label: const Text("Device"),
+              dropdownMenuEntries: widget.devices
+                  .map((dev) =>
+                      DropdownMenuEntry(value: dev.id, label: dev.name))
+                  .toList(),
+              initialSelection: widget.selectedDevice,
+              onSelected: widget.setSelectedDevice,
+            )),
+            floatingActionButton: FloatingActionButton(
+                elevation: 0,
+                child: const Icon(Icons.shuffle),
+                onPressed: () async {
+                  if (widget.selectedDevice != null) {
+                    await shuffleAndPlay(
+                        widget.playlist, widget.selectedDevice!);
+                  }
+                }),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.endContained,
             body: FutureBuilder(
-              future: playlist.getTracks(),
+              future: widget.playlist.getTracks(),
               builder: (context, AsyncSnapshot<List<Track>> snapshot) {
                 if (snapshot.hasData) {
                   return ListView.builder(
@@ -109,12 +138,12 @@ class PlaylistView extends StatelessWidget {
 
                                     track.beforeThis = otherTrack;
                                     otherTrack.afterThis = track;
-                                    await setConstraint(
-                                        playlist.id, otherTrack.id, track.id);
+                                    await setConstraint(widget.playlist.id,
+                                        otherTrack.id, track.id);
                                   } else if (otherTrackId == "None") {
                                     String? firstTrack =
                                         await removeConstraintSecond(
-                                            playlist.id, track.id);
+                                            widget.playlist.id, track.id);
                                     track.beforeThis = null;
                                     if (firstTrack != null) {
                                       Track otherTrack = snapshot.data!

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shuffle_enforcer/models/device.dart';
 import 'package:shuffle_enforcer/models/playlist.dart';
 import 'package:shuffle_enforcer/playlist_view.dart';
 import 'package:shuffle_enforcer/utils/api.dart';
@@ -13,19 +14,38 @@ class PlaylistListing extends StatefulWidget {
 }
 
 class _PlaylistListingState extends State<PlaylistListing> {
-  Future<List<Playlist>> playlists = getPlaylistListing();
+  late Future<List<Playlist>> playlists;
+  List<Device> devices = [];
+  String? selectedDevice;
+
+  void setSelectedDevice(String? deviceId) {
+    setState(() {
+      selectedDevice = deviceId;
+    });
+  }
+
+  @override
+  void initState() {
+    playlists = getPlaylistListing();
+    Future.delayed(Duration(seconds: 2), () {})
+        .then((val) => getDevices())
+        .then((val) => setState(() => devices = val));
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
         future: playlists,
-        builder: (context, AsyncSnapshot<List<Playlist>> snapshot) {
+        builder: (context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
+            List<Playlist> playlists = snapshot.data;
+            // List<Device> devices = snapshot.data[1];
             return ListView.builder(
               padding: const EdgeInsets.all(8),
-              itemCount: snapshot.data!.length,
+              itemCount: playlists.length,
               itemBuilder: (BuildContext context, int index) {
-                Playlist playlist = snapshot.data![index];
+                Playlist playlist = playlists[index];
                 Widget playlistWidget = InkWell(
                   child: ListTile(
                       title: Text(playlist.name),
@@ -37,8 +57,11 @@ class _PlaylistListingState extends State<PlaylistListing> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) =>
-                                PlaylistView(playlist: playlist)));
+                            builder: (context) => PlaylistView(
+                                playlist: playlist,
+                                devices: devices,
+                                selectedDevice: selectedDevice,
+                                setSelectedDevice: setSelectedDevice)));
                   },
                 );
 
@@ -49,7 +72,8 @@ class _PlaylistListingState extends State<PlaylistListing> {
               },
             );
           } else if (snapshot.hasError) {
-            return const Center(child: Text("Error retrieving playists."));
+            return const Center(
+                child: Text("Error retrieving playlists or devices."));
           } else {
             return const Center(child: CircularProgressIndicator());
           }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:shuffle_enforcer/models/device.dart';
 import 'package:shuffle_enforcer/models/playlist.dart';
 import 'package:shuffle_enforcer/models/track.dart';
 import 'package:shuffle_enforcer/utils/auth.dart';
@@ -135,7 +136,7 @@ Future<List<Track>> getPlaylistTracks(String id) async {
   return tracks;
 }
 
-Future<bool> shuffleAndPlay(Playlist playlist) async {
+Future<bool> shuffleAndPlay(Playlist playlist, String deviceId) async {
   if (await hasLoopingConstraints(playlist)) {
     return false;
   }
@@ -156,7 +157,8 @@ Future<bool> shuffleAndPlay(Playlist playlist) async {
       shuffled.map((element) => "spotify:track:${element.id}").toList();
 
   Response? res = await callApiPut(
-      Uri.https("api.spotify.com", "/v1/me/player/play", {"device_id": "TODO"}),
+      Uri.https(
+          "api.spotify.com", "/v1/me/player/play", {"device_id": deviceId}),
       {"uris": trackUris});
 
   if (res == null) {
@@ -168,4 +170,28 @@ Future<bool> shuffleAndPlay(Playlist playlist) async {
   }
 
   return true;
+}
+
+Future<List<Device>> getDevices() async {
+  Response? res =
+      await callApiGet(Uri.https("api.spotify.com", "/v1/me/player/devices"));
+
+  if (res == null) {
+    throw Exception("Error refreshing token!");
+  }
+
+  if (res.statusCode != 200) {
+    throw Exception("Error response!");
+  }
+
+  Map body = jsonDecode(res.body);
+  List<Device> devices = [];
+
+  for (Map device in body["devices"]) {
+    if (!device["is_restricted"]) {
+      devices.add(Device(device["id"], device["name"]));
+    }
+  }
+
+  return devices;
 }

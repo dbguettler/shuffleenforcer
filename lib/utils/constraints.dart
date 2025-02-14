@@ -1,5 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shuffle_enforcer/models/constraint.dart';
+import 'package:shuffle_enforcer/models/playlist.dart';
+import 'package:shuffle_enforcer/models/track.dart';
 
 Future<List<Constraint>> getConstraints(String playlistId) async {
   final prefs = SharedPreferencesAsync();
@@ -76,4 +78,35 @@ Future<String?> removeConstraintSecond(
 
   await prefs.setStringList(key, newConstraints);
   return firstTrackId;
+}
+
+Future<bool> hasLoopingConstraints(Playlist playlist) async {
+  List<Track> tracks = List.from(await playlist.getTracks());
+  Map<String, Track> trackMap = {};
+
+  // Put all tracks that have either beforeThis or afterThis in a map, and
+  // remove each from the list unless beforeThis is null.
+  for (int i = 0; i < tracks.length; i++) {
+    if (tracks[i].beforeThis != null || tracks[i].afterThis != null) {
+      trackMap[tracks[i].id] = tracks[i];
+    }
+
+    if (tracks[i].beforeThis != null) {
+      tracks.removeAt(i);
+      i--;
+    }
+  }
+
+  // Step through each element left in the list. Each is the start of a chain.
+  for (Track t in tracks) {
+    // Follow the chain until the end, removing each element.
+    Track? current = t;
+    while (current != null) {
+      trackMap.remove(current.id);
+      current = current.afterThis;
+    }
+  }
+
+  // If there are no loops, the map should be empty.
+  return trackMap.isNotEmpty;
 }

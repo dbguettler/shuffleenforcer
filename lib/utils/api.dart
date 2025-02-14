@@ -4,6 +4,7 @@ import 'package:http/http.dart';
 import 'package:shuffle_enforcer/models/playlist.dart';
 import 'package:shuffle_enforcer/models/track.dart';
 import 'package:shuffle_enforcer/utils/auth.dart';
+import 'package:shuffle_enforcer/utils/constraints.dart';
 
 Future<Response?> callApiGet(Uri uri, [Map<String, String>? headers]) async {
   bool tokenStatus = await refreshTokensIfNeeded();
@@ -16,6 +17,21 @@ Future<Response?> callApiGet(Uri uri, [Map<String, String>? headers]) async {
   realHeaders["Authorization"] = "Bearer $accessToken";
 
   return await get(uri, headers: realHeaders);
+}
+
+Future<Response?> callApiPut(Uri uri, Map body,
+    [Map<String, String>? headers]) async {
+  bool tokenStatus = await refreshTokensIfNeeded();
+  if (!tokenStatus) {
+    return null;
+  }
+
+  final String accessToken = await getAccessToken();
+  Map<String, String> realHeaders = headers ?? <String, String>{};
+  realHeaders["Authorization"] = "Bearer $accessToken";
+  realHeaders["Content-Type"] = "application/json";
+
+  return await put(uri, body: jsonEncode(body), headers: realHeaders);
 }
 
 Future<List<Playlist>> getPlaylistListing() async {
@@ -117,4 +133,39 @@ Future<List<Track>> getPlaylistTracks(String id) async {
   }
 
   return tracks;
+}
+
+Future<bool> shuffleAndPlay(Playlist playlist) async {
+  if (await hasLoopingConstraints(playlist)) {
+    return false;
+  }
+
+  // Shuffle playlist and generate list of Spotify URIs
+  List<Track> shuffled = (await playlist.getTracks())
+      .where((track) => track.beforeThis == null)
+      .toList();
+  shuffled.shuffle();
+
+  for (int i = 0; i < shuffled.length; i++) {
+    if (shuffled[i].afterThis != null) {
+      shuffled.insert(i + 1, shuffled[i].afterThis!);
+    }
+  }
+
+  List<String> trackUris =
+      shuffled.map((element) => "spotify:track:${element.id}").toList();
+
+  Response? res = await callApiPut(
+      Uri.https("api.spotify.com", "/v1/me/player/play", {"device_id": "TODO"}),
+      {"uris": trackUris});
+
+  if (res == null) {
+    throw Exception("Error refreshing token!");
+  }
+
+  if (res.statusCode != 204) {
+    throw Exception("Error response!");
+  }
+
+  return true;
 }

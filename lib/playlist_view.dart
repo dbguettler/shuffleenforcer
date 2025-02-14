@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shuffle_enforcer/models/playlist.dart';
 import 'package:shuffle_enforcer/models/track.dart';
+import 'package:shuffle_enforcer/utils/api.dart';
 import 'package:shuffle_enforcer/utils/constraints.dart';
 
 class PlaylistView extends StatelessWidget {
@@ -15,7 +16,11 @@ class PlaylistView extends StatelessWidget {
             appBar: AppBar(
               title: Text(playlist.name),
               actions: [
-                IconButton(icon: const Icon(Icons.shuffle), onPressed: () {})
+                IconButton(
+                    icon: const Icon(Icons.shuffle),
+                    onPressed: () async {
+                      await shuffleAndPlay(playlist);
+                    })
               ],
             ),
             body: FutureBuilder(

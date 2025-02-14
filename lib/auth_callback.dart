@@ -16,8 +16,10 @@ class AuthCallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget childWidget = const Column(
-        children: [CircularProgressIndicator(), Text("Loading auth...")]);
+    Widget childWidget = const Center(
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [CircularProgressIndicator(), Text("Loading auth...")]));
     if (params.containsKey("error") || !params.containsKey("code")) {
       childWidget = Text("Error: ${params["error"]}");
     } else {

@@ -31,14 +31,11 @@ Future<List<Playlist>> getPlaylistListing() async {
         {"limit": pageSize.toString(), "offset": currentOffset.toString()}));
 
     if (res == null) {
-      print("error refreshing token");
-      return [];
+      throw Exception("Error refreshing token!");
     }
 
     if (res.statusCode != 200) {
-      print("error response");
-      print(res.body);
-      return [];
+      throw Exception("Error response!");
     }
 
     Map body = jsonDecode(res.body);

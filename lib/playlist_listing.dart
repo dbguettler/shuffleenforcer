@@ -27,7 +27,7 @@ class _PlaylistListingState extends State<PlaylistListing> {
   @override
   void initState() {
     playlists = getPlaylistListing();
-    Future.delayed(Duration(seconds: 2), () {})
+    Future.delayed(const Duration(seconds: 2), () {})
         .then((val) => getDevices())
         .then((val) => setState(() => devices = val));
     super.initState();

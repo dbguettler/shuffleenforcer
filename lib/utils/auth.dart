@@ -49,7 +49,7 @@ void requestAuthorization() async {
     "response_type": "code",
     "client_id": "de6289eff46548bda83bff349504395f",
     "scope":
-        "playlist-read-private user-modify-playback-state user-read-private",
+        "playlist-read-private user-modify-playback-state user-read-private user-read-playback-state",
     "code_challenge_method": "S256",
     "code_challenge": encodedVerifier,
     "state": state,

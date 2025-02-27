@@ -101,7 +101,7 @@ Future<bool> requestTokens(String? receivedState, String? receivedCode) async {
   await prefs.setString("access", body["access_token"]);
   await prefs.setString("refresh", body["refresh_token"]);
   await prefs.setInt("expiry",
-      DateTime.now().millisecondsSinceEpoch * 1000 + body["expires_in"] as int);
+      DateTime.now().millisecondsSinceEpoch / 1000 + body["expires_in"] as int);
 
   return true;
 }
@@ -124,7 +124,7 @@ Future<bool> refreshTokensIfNeeded() async {
   }
 
   int expiry = (await prefs.getInt("expiry"))!;
-  if (expiry > DateTime.now().millisecondsSinceEpoch * 1000 + 2) {
+  if (expiry > DateTime.now().millisecondsSinceEpoch / 1000 + 2) {
     return true;
   }
 
@@ -153,7 +153,7 @@ Future<bool> refreshTokensIfNeeded() async {
     await prefs.setString("refresh", body["refresh_token"]);
   }
   await prefs.setInt("expiry",
-      DateTime.now().millisecondsSinceEpoch * 1000 + body["expires_in"] as int);
+      DateTime.now().millisecondsSinceEpoch / 1000 + body["expires_in"] as int);
   return true;
 }
 

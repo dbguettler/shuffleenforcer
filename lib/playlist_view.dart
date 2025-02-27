@@ -6,23 +6,35 @@ import 'package:shuffle_enforcer/track_list_item.dart';
 import 'package:shuffle_enforcer/utils/api.dart';
 
 class PlaylistView extends StatefulWidget {
-  const PlaylistView(
-      {super.key,
-      required this.playlist,
-      required this.devices,
-      required this.selectedDevice,
-      required this.setSelectedDevice});
+  const PlaylistView({
+    super.key,
+    required this.playlist,
+  });
 
   final Playlist playlist;
-  final List<Device> devices;
-  final String? selectedDevice;
-  final void Function(String?) setSelectedDevice;
 
   @override
   State<PlaylistView> createState() => _PlaylistViewState();
 }
 
 class _PlaylistViewState extends State<PlaylistView> {
+  List<Device> devices = [];
+  String? selectedDevice;
+
+  @override
+  void initState() {
+    getDevices().then((devs) => setState(() {
+          devices = devs;
+        }));
+    super.initState();
+  }
+
+  void setSelectedDevice(String? deviceId) {
+    setState(() {
+      selectedDevice = deviceId;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -34,27 +46,27 @@ class _PlaylistViewState extends State<PlaylistView> {
             bottomNavigationBar: BottomAppBar(
                 child: DropdownMenu(
               label: const Text("Device"),
-              dropdownMenuEntries: widget.devices
+              dropdownMenuEntries: devices
                   .map((dev) =>
                       DropdownMenuEntry(value: dev.id, label: dev.name))
                   .toList(),
-              initialSelection: widget.selectedDevice,
+              initialSelection: selectedDevice,
               onSelected: (String? device) {
-                widget.setSelectedDevice(device);
+                setSelectedDevice(device);
               },
+              width: MediaQuery.sizeOf(context).width * 0.6,
             )),
             floatingActionButton: FloatingActionButton(
                 elevation: 0,
-                backgroundColor: widget.selectedDevice == null
+                backgroundColor: selectedDevice == null
                     ? const Color.fromARGB(255, 124, 124, 124)
                     : null,
-                foregroundColor: widget.selectedDevice == null
+                foregroundColor: selectedDevice == null
                     ? const Color.fromARGB(255, 58, 58, 58)
                     : null,
-                onPressed: widget.selectedDevice != null
+                onPressed: selectedDevice != null
                     ? () async {
-                        await shuffleAndPlay(
-                            widget.playlist, widget.selectedDevice!);
+                        await shuffleAndPlay(widget.playlist, selectedDevice!);
                       }
                     : null,
                 child: const Icon(Icons.shuffle)),

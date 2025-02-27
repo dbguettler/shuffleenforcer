@@ -27,6 +27,8 @@ class _PlaylistListingState extends State<PlaylistListing> {
   @override
   void initState() {
     playlists = getPlaylistListing();
+    // TODO: for some reason, Spotify doesn't like it when I call
+    // getPlaylistListing() and getDevices() too close together.
     Future.delayed(const Duration(seconds: 2), () {})
         .then((val) => getDevices())
         .then((val) => setState(() => devices = val));

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shuffle_enforcer/models/device.dart';
 import 'package:shuffle_enforcer/models/playlist.dart';
 import 'package:shuffle_enforcer/models/track.dart';
+import 'package:shuffle_enforcer/track_list_item.dart';
 import 'package:shuffle_enforcer/utils/api.dart';
-import 'package:shuffle_enforcer/utils/constraints.dart';
 
 class PlaylistView extends StatefulWidget {
   const PlaylistView(
@@ -39,7 +39,9 @@ class _PlaylistViewState extends State<PlaylistView> {
                       DropdownMenuEntry(value: dev.id, label: dev.name))
                   .toList(),
               initialSelection: widget.selectedDevice,
-              onSelected: widget.setSelectedDevice,
+              onSelected: (String? device) {
+                widget.setSelectedDevice(device);
+              },
             )),
             floatingActionButton: FloatingActionButton(
                 elevation: 0,
@@ -51,9 +53,9 @@ class _PlaylistViewState extends State<PlaylistView> {
                     : null,
                 onPressed: widget.selectedDevice != null
                     ? () async {
-                    await shuffleAndPlay(
-                        widget.playlist, widget.selectedDevice!);
-                  }
+                        await shuffleAndPlay(
+                            widget.playlist, widget.selectedDevice!);
+                      }
                     : null,
                 child: const Icon(Icons.shuffle)),
             floatingActionButtonLocation:
@@ -66,106 +68,15 @@ class _PlaylistViewState extends State<PlaylistView> {
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
                         Track track = snapshot.data![index];
-                        String subtitle = track.artists.join(", ");
 
-                        if (track.beforeThis != null) {
-                          subtitle +=
-                              "\n\nPlays after ${track.beforeThis!.name}";
-                        }
+                        List<Track> otherTracks = [...snapshot.data!];
+                        otherTracks.remove(track);
 
-                        Widget trackWidget = ListTile(
-                            title: Text(track.name),
-                            subtitle: Text(subtitle),
-                            leading: Image.network(track.albumArtUrl),
-                            trailing: IconButton(
-                                onPressed: () async {
-                                  String? otherTrackId = await showDialog<
-                                          String?>(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        String? selectedId;
-
-                                        List<DropdownMenuEntry<String>>
-                                            dropdownItems = snapshot.data!
-                                                .map<DropdownMenuEntry<String>>(
-                                                    (t) => DropdownMenuEntry<
-                                                            String>(
-                                                        value: t.id,
-                                                        label: t.name))
-                                                .toList();
-                                        //Remove self from list and add "None" option
-                                        dropdownItems.removeAt(index);
-                                        dropdownItems.insert(
-                                            0,
-                                            const DropdownMenuEntry(
-                                                value: "None", label: "None"));
-
-                                        DropdownMenu<String> menu =
-                                            DropdownMenu(
-                                          dropdownMenuEntries: dropdownItems,
-                                          menuHeight: MediaQuery.sizeOf(context)
-                                                  .height /
-                                              3,
-                                          onSelected: (value) {
-                                            selectedId = value;
-                                          },
-                                          initialSelection:
-                                              track.beforeThis?.id ?? "None",
-                                        );
-
-                                        return AlertDialog(
-                                          title: const Text("Edit Constraint"),
-                                          content: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text("Play ${track.name} after:"),
-                                              menu
-                                            ],
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                                onPressed: () =>
-                                                    Navigator.pop<String?>(
-                                                        context, null),
-                                                child: const Text("Cancel")),
-                                            TextButton(
-                                                onPressed: () =>
-                                                    Navigator.pop<String?>(
-                                                        context, selectedId),
-                                                child: const Text("OK"))
-                                          ],
-                                        );
-                                      });
-                                  if (otherTrackId != null &&
-                                      otherTrackId != "None") {
-                                    Track otherTrack = snapshot.data!
-                                        .singleWhere((element) =>
-                                            element.id == otherTrackId);
-
-                                    track.beforeThis = otherTrack;
-                                    otherTrack.afterThis = track;
-                                    await setConstraint(widget.playlist.id,
-                                        otherTrack.id, track.id);
-                                  } else if (otherTrackId == "None") {
-                                    String? firstTrack =
-                                        await removeConstraintSecond(
-                                            widget.playlist.id, track.id);
-                                    track.beforeThis = null;
-                                    if (firstTrack != null) {
-                                      Track otherTrack = snapshot.data!
-                                          .singleWhere((element) =>
-                                              element.id == firstTrack);
-                                      otherTrack.afterThis = null;
-                                    }
-                                  }
-                                },
-                                icon: const Icon(Icons.more_vert)),
-                            isThreeLine: track.beforeThis != null);
-
-                        List<Widget> trackAndDivider = index == 0
-                            ? [trackWidget]
-                            : [const Divider(), trackWidget];
-                        return Column(children: trackAndDivider);
+                        return TrackListItem(
+                            track: track,
+                            playlistId: widget.playlist.id,
+                            isFirst: index == 0,
+                            otherTracks: otherTracks);
                       });
                 } else if (snapshot.hasError) {
                   return const Center(

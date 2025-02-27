@@ -43,13 +43,19 @@ class _PlaylistViewState extends State<PlaylistView> {
             )),
             floatingActionButton: FloatingActionButton(
                 elevation: 0,
-                child: const Icon(Icons.shuffle),
-                onPressed: () async {
-                  if (widget.selectedDevice != null) {
+                backgroundColor: widget.selectedDevice == null
+                    ? const Color.fromARGB(255, 124, 124, 124)
+                    : null,
+                foregroundColor: widget.selectedDevice == null
+                    ? const Color.fromARGB(255, 58, 58, 58)
+                    : null,
+                onPressed: widget.selectedDevice != null
+                    ? () async {
                     await shuffleAndPlay(
                         widget.playlist, widget.selectedDevice!);
                   }
-                }),
+                    : null,
+                child: const Icon(Icons.shuffle)),
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.endContained,
             body: FutureBuilder(

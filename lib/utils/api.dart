@@ -66,7 +66,7 @@ Future<List<Playlist>> getPlaylistListing() async {
           playlist["name"],
           playlist["description"],
           playlist["owner"]["display_name"],
-          playlist["href"],
+          playlist["external_urls"]["spotify"],
           imageUrl));
     }
 

@@ -4,6 +4,7 @@ import 'package:shuffle_enforcer/models/playlist.dart';
 import 'package:shuffle_enforcer/models/track.dart';
 import 'package:shuffle_enforcer/track_list_item.dart';
 import 'package:shuffle_enforcer/utils/api.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PlaylistView extends StatefulWidget {
   const PlaylistView({
@@ -42,6 +43,14 @@ class _PlaylistViewState extends State<PlaylistView> {
             appBar: AppBar(
               title: Text(widget.playlist.name),
               centerTitle: true,
+              actions: [
+                IconButton(
+                    onPressed: () {
+                      launchUrl(Uri.parse(widget.playlist.spotifyUrl),
+                          mode: LaunchMode.externalApplication);
+                    },
+                    icon: const Icon(Icons.open_in_new))
+              ],
             ),
             bottomNavigationBar: BottomAppBar(
                 child: DropdownMenu(

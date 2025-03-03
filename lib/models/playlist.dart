@@ -9,7 +9,7 @@ class Playlist {
   String name;
   String? description;
   String? owner;
-  String href;
+  String spotifyUrl;
   String? imageUrl;
   List<Track>? _tracks;
 
@@ -18,7 +18,7 @@ class Playlist {
     this.name,
     this.description,
     this.owner,
-    this.href,
+    this.spotifyUrl,
     this.imageUrl,
   );
 

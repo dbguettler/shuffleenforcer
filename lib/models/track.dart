@@ -5,8 +5,9 @@ class Track {
   String albumArtUrl;
   Track? afterThis;
   Track? beforeThis;
+  String spotifyUrl;
 
-  Track(this.id, this.name, this.artists, this.albumArtUrl,
+  Track(this.id, this.name, this.artists, this.albumArtUrl, this.spotifyUrl,
       [this.beforeThis, this.afterThis]);
 
   @override

@@ -98,7 +98,7 @@ Future<List<Track>> getPlaylistTracks(String id) async {
         Uri.https("api.spotify.com", "/v1/playlists/$id/tracks", {
       "market": countryCode,
       "fields":
-          "next,items(is_local,track(album(images),artists(name),id,name))",
+          "next,items(is_local,track(album(images),artists(name),id,name,external_urls))",
       "limit": pageSize.toString(),
       "offset": currentOffset.toString()
     }));
@@ -126,7 +126,8 @@ Future<List<Track>> getPlaylistTracks(String id) async {
         artists.add(artist["name"]);
       }
 
-      tracks.add(Track(track["id"], track["name"], artists, albumArt));
+      tracks.add(Track(track["id"], track["name"], artists, albumArt,
+          track["external_urls"]["spotify"]));
     }
 
     currentOffset += pageSize;

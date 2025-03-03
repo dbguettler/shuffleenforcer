@@ -37,7 +37,9 @@ class _TrackListItemState extends State<TrackListItem> {
     Widget trackWidget = ListTile(
         title: Text(widget.track.name),
         subtitle: Text(subtitle),
-        leading: Image.network(widget.track.albumArtUrl),
+        leading: ClipRRect(
+            borderRadius: BorderRadius.circular(2),
+            child: Image.network(widget.track.albumArtUrl)),
         trailing: IconButton(
             onPressed: () async {
               String? otherTrackId = await showDialog<String?>(

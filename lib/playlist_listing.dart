@@ -39,7 +39,9 @@ class _PlaylistListingState extends State<PlaylistListing> {
                       title: Text(playlist.name),
                       subtitle: Text(playlist.owner ?? "Unavailable"),
                       leading: playlist.imageUrl != null
-                          ? Image.network(playlist.imageUrl!)
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.circular(2),
+                              child: Image.network(playlist.imageUrl!))
                           : const Icon(Icons.music_note)),
                   onTap: () {
                     Navigator.push(
